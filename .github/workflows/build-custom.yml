@@ -1,0 +1,60 @@
+
+name: Build Custom Seerr Image
+
+on:
+  push:
+    branches:
+      - develop
+  schedule:
+    # Runs daily at 4:00 AM UTC to pull upstream updates
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Sync upstream develop
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/seerr-team/seerr.git
+          git fetch upstream develop
+
+          git rebase upstream/develop
+
+          git push --force-with-lease origin HEAD:develop
+
+      - name: Get build commit SHA
+        id: version
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Building Seerr from commit: $(git rev-parse HEAD)"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/devinfahnestock/seerr:latest
+          build-args: |
+            COMMIT_TAG=${{ steps.version.outputs.sha }}
