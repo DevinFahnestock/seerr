@@ -820,6 +820,7 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
                       </a>
                     </Tooltip>
                   )}
+
                 {ratingData?.rt?.audienceRating &&
                   !!ratingData?.rt?.audienceScore && (
                     <Tooltip
@@ -840,6 +841,7 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
                       </a>
                     </Tooltip>
                   )}
+
                 {ratingData?.imdb?.criticsScore && (
                   <Tooltip
                     content={intl.formatMessage(messages.imdbuserscore, {
@@ -890,6 +892,21 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
               <span>{intl.formatMessage(globalMessages.status)}</span>
               <span className="media-fact-value">{data.status}</span>
             </div>
+            {ratingData?.imdb?.url && (
+              <div className="media-fact">
+                <span>Parents Guide</span>
+                <span>
+                  <a
+                    href={`${ratingData.imdb.url}/parentalguide/?ref_=tt_stry_pg#nudity`}
+                    className="parents-rating"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View
+                  </a>
+                </span>
+              </div>
+            )}
             {filteredReleases && filteredReleases.length > 0 ? (
               <div className="media-fact">
                 <span>
